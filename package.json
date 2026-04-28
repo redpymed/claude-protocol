@@ -1,11 +1,11 @@
 {
-  "name": "claude-protocol",
+  "name": "claude-protocol-es",
   "version": "2.3.0",
   "description": "Protocolo modular para Claude Code: CLAUDE.md universal + normas por dominio + plantillas de proyecto + bootstrap automatizado.",
   "type": "module",
   "main": "bootstrap.mjs",
   "bin": {
-    "claude-protocol": "./bootstrap.mjs"
+    "claude-protocol-es": "./bootstrap.mjs"
   },
   "files": [
     "bootstrap.mjs",
