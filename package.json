@@ -1,0 +1,58 @@
+{
+  "name": "claude-protocol",
+  "version": "2.3.0",
+  "description": "Protocolo modular para Claude Code: CLAUDE.md universal + normas por dominio + plantillas de proyecto + bootstrap automatizado.",
+  "type": "module",
+  "main": "bootstrap.mjs",
+  "bin": {
+    "claude-protocol": "./bootstrap.mjs"
+  },
+  "files": [
+    "bootstrap.mjs",
+    "templates/",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "new": "node bootstrap.mjs new",
+    "adapt": "node bootstrap.mjs adapt",
+    "update": "node bootstrap.mjs update",
+    "check": "node bootstrap.mjs check",
+    "new-module": "node bootstrap.mjs new-module",
+    "validate": "node bootstrap.mjs validate",
+    "version": "node bootstrap.mjs version",
+    "help": "node bootstrap.mjs --help",
+    "test:smoke": "rm -rf /tmp/cp-smoke && mkdir -p /tmp/cp-smoke && node bootstrap.mjs new /tmp/cp-smoke && node bootstrap.mjs check /tmp/cp-smoke && node bootstrap.mjs new-module billing /tmp/cp-smoke && node bootstrap.mjs validate /tmp/cp-smoke"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "claude",
+    "claude-code",
+    "anthropic",
+    "ai",
+    "agentic",
+    "protocol",
+    "bootstrap",
+    "scaffolding",
+    "template",
+    "ai-coding",
+    "developer-tools",
+    "best-practices"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/redpymed/claude-protocol.git"
+  },
+  "bugs": {
+    "url": "https://github.com/redpymed/claude-protocol/issues"
+  },
+  "homepage": "https://github.com/redpymed/claude-protocol#readme",
+  "author": "Redpyme D <admin@redpymed.es>",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  }
+}

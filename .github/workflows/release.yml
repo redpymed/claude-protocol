@@ -1,0 +1,100 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  smoke-test:
+    name: Smoke test bootstrap
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Smoke test (new mode)
+        run: |
+          mkdir -p /tmp/smoke-new
+          node bootstrap.mjs new /tmp/smoke-new
+          test -f /tmp/smoke-new/CLAUDE.md
+          test -f /tmp/smoke-new/docs/normas/normasUX.md
+          test -f /tmp/smoke-new/descripcion.md
+          test -f /tmp/smoke-new/stack.md
+          echo "✅ new mode OK"
+
+      - name: Smoke test (check mode)
+        run: |
+          node bootstrap.mjs check /tmp/smoke-new
+          echo "✅ check mode OK"
+
+      - name: Smoke test (adapt mode)
+        run: |
+          mkdir -p /tmp/smoke-adapt
+          echo "# Old CLAUDE.md" > /tmp/smoke-adapt/CLAUDE.md
+          echo "# Old conventions" > /tmp/smoke-adapt/CONVENTIONS.md
+          printf "y\n" | node bootstrap.mjs adapt /tmp/smoke-adapt
+          test -f /tmp/smoke-adapt/MIGRATION-INSTRUCTIONS.md
+          test -d /tmp/smoke-adapt/.claude-backup-*
+          echo "✅ adapt mode OK"
+
+  publish-npm:
+    name: Publish to npm
+    needs: smoke-test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Verify version matches tag
+        run: |
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          TAG_VERSION="${GITHUB_REF#refs/tags/v}"
+          if [ "$PKG_VERSION" != "$TAG_VERSION" ]; then
+            echo "❌ package.json version ($PKG_VERSION) does not match tag ($TAG_VERSION)"
+            exit 1
+          fi
+          echo "✅ Version match: $PKG_VERSION"
+
+      - name: Publish to npm
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  github-release:
+    name: Create GitHub Release
+    needs: publish-npm
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract changelog for this version
+        id: changelog
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/v}"
+          # Extract the section between this version's heading and the next one
+          NOTES=$(awk "/^## \[${VERSION}\]/{flag=1; next} /^## \[/{flag=0} flag" CHANGELOG.md)
+          {
+            echo "notes<<EOF"
+            echo "$NOTES"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          body: ${{ steps.changelog.outputs.notes }}
+          draft: false
+          prerelease: false
